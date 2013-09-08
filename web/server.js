@@ -1,5 +1,4 @@
 
-var PORT = 5000;
 var DIR_CACHE = 'cache';
 
 var config = require('./config.json');
@@ -304,12 +303,12 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
       });
     },
     connect.static(__dirname + '/')
-  ).listen(PORT);
+  ).listen(config.port);
   var io = require('socket.io').listen(app, {log:false});
 
   var graph = require('fbgraph');
 
-  console.log(' >> Server started on port `%s`', PORT);
+  console.log(' >> Server started on port `%s`', config.port);
 
   io.sockets.on('connection', function(socket) {
     var FBScrape = ModuleFBScrape(graph, db, socket);
