@@ -64,7 +64,7 @@ var ModuleFBScrape = function (graph, db) {
         id:           response[i].uid,
         name:         response[i].name,
         pictureURL:   response[i].pic_square,
-        locationID:   response[i].locationID,
+        locationID:   locationID,
         profileURL:   response[i].profile_url,
         username:     response[i].username,
       };
@@ -134,6 +134,35 @@ var ModuleFBScrape = function (graph, db) {
     });
   };
 
+  /* Send data to client. */
+  FBScrape.getData = function(callback) {
+    callback = callback || function () {};
+    data = {
+      me: FBScrape.me
+    };
+
+    db.models.friend.find({ id1: FBScrape.me.id }, function (err, friends) {
+      var friendIDs = [];
+      for (var i = 0; i < friends.length; i++) {
+        friendIDs.push(friends[i].id2);
+      }
+      db.models.person.find({ id: friendIDs }, function (err, friends) {
+        data.friends = friends;
+
+        var locationIDs = [];
+        for (var i = 0; i < friends.length; i++) {
+          locationIDs.push(friends[i].locationID);
+        }
+
+        db.models.location.find({ id: locationIDs }, function (err, locations) {
+          data.locations = locations;
+
+          callback(data);
+        });
+      });
+    });
+  };
+
   return FBScrape;
 };
 
@@ -193,11 +222,11 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
   var io = require('socket.io').listen(app);
 
   var graph = require('fbgraph');
-  var FBScrape = ModuleFBScrape(graph, db);
 
   console.log(' >> Server started on port `%s`', PORT);
 
-  io.sockets.on('connection', function(socket){
+  io.sockets.on('connection', function(socket) {
+    var FBScrape = ModuleFBScrape(graph, db, socket);
 
     socket.on('init', function (info) {
     });
@@ -215,11 +244,18 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
       });
     });
 
-    socket.on('RFD', function (accessToken) {
+    socket.on('newLogin', function (accessToken) {
       graph.setAccessToken(accessToken);
-
       FBScrape.myInfo(function () {
-        FBScrape.myFriendList();
+        FBScrape.getData(function (data) {
+          socket.emit('userData', data);
+        });
+
+        FBScrape.myFriendList(function () {
+          FBScrape.getData(function (data) {
+            socket.emit('userData', data);
+          });
+        });
       });
     });
 

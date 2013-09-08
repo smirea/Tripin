@@ -1,17 +1,6 @@
 
 var API = {
   DEBUG: true,
-  init: function _init (callback) {
-    callback = callback || function () {};
-    console.log('Getting friends');
-    API.friends.location(function(){
-      console.log('Getting cities');
-      API.friends.cities(function(response){
-        callback();
-        console.log('done');
-      });
-    });
-  },
   fql: function _fql (query, callback) {
     callback = callback || API.printJSON;
     return FB.api({
@@ -73,7 +62,6 @@ var API = {
             API.friends._cities[i].longitude
           );
           if (distance < threshold) {
-            console.log(API.friends._cities[i]);
             for (var j in API.friends._info) {
               if (API.friends._info[j].location &&
                   API.friends._info[j].location.id ===
@@ -204,7 +192,7 @@ var API = {
       for (var i=0; i<friends.length; ++i) {
         if (API.friends._info[friends[i].uid]) {
           for (var key in friends[i]) {
-            API.friends._info[key] = friends[i][key];
+            API.friends._info[friends[i].uid][key] = friends[i][key];
           }
         } else {
           API.friends._info[friends[i].uid] = friends[i];

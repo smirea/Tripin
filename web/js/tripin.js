@@ -35,19 +35,33 @@ function handle_login(response) {
 
     socket.emit('extendToken', accessToken);
     socket.emit('newLogin', accessToken);
-
-    // Should do periodic pull
-    socket.emit('RFD', accessToken);
-    API.me.getBasicInfo(function(response){
-      if(!response.error){
-        var user = API.me.get();
-        $(".user_name").html(user.name);
-        $(".user_img").html("<img class=\"img-polaroid\" src=\""+ user.picture.data.url + "\" alt=\"Profile Picture\">");
-        $(".login").hide();
-        API.init();
-      } else {
-        setTimeout(get_user_data, 100);
-      }
-    });
   }
 }
+
+socket.on('userData', function(data) {
+  API.me._update(data.me);
+
+  $(".user_name").html(data.me.name);
+  $(".user_img").html("<img class=\"img-polaroid\" src=\""+ data.me.picture_url + "\" alt=\"Profile Picture\">");
+  $(".login").hide();
+
+  if (!API.friends._cities) {
+    API.friends._cities = {};
+  }
+  for (var i = 0; i < data.locations.length; i++) {
+    data.locations[i].page_id = data.locations[i].id;
+
+    API.friends._cities[data.locations[i].id] = data.locations[i];
+  }
+
+  for (var i = 0; i < data.friends.length; i++) {
+    if (data.friends[i].locationID) {
+      data.friends[i].location = API.friends._cities[data.friends[i].locationID];
+    }
+
+    data.friends[i].uid = data.friends[i].id;
+    data.friends[i].pic_square = data.friends[i].pictureURL;
+    data.friends[i].profile_url = data.friends[i].profileURL;
+  }
+  API.friends._update(data.friends);
+});
