@@ -176,9 +176,6 @@ var circles = [];
         });
         marker.user_data = resp;
         OMS.addMarker(marker);
-        API.friends.withinRadius(myLatlng.ob, myLatlng.pb, null, function () {
-          console.log(arguments);
-        });
       };
       img.src = resp.pictureCached;
       // make_infobox(resp.pictureCached).open(MAP, marker);
@@ -291,27 +288,41 @@ var circles = [];
    * @param marker
    */
   function addWaypointView (marker) {
-    $('#waypoints').append(
-      jqElement('li')
-        .addClass('marker')
-        .append(
-          jqElement('a').
-            attr('href', 'javascript:void(0)').
-            append(
-              jqElement('i').addClass('icon-location-arrow'),
-              jqElement('span').html(marker.position.ob),
-              jqElement('span').html(', '),
-              jqElement('span').html(marker.position.pb),
-              jqElement('span').
-                addClass('close').
-                attr('close', 2).
-                html('&times;').
-                on('click', function () {
-                  marker.setMap(null);
-                })
-            )
-        )
-    );
+    var $pos = jqElement('span').addClass('location-coordinates');
+    API.friends.withinRadius(marker.position.ob, marker.position.pb, 50000, function (res) {
+      try {
+        res.sort(function (a, b) {
+          return a.distance_meters - b.distance_meters;
+        });
+        $pos.append(res[0].name);
+      } catch (ex) {
+        console.warn(ex.message, res);
+        $pos.append(
+          jqElement('span').html(marker.position.ob),
+          jqElement('span').html(', '),
+          jqElement('span').html(marker.position.pb)
+        );
+      }
+      $('#waypoints').append(
+        jqElement('li')
+          .addClass('marker')
+          .append(
+            jqElement('a').
+              attr('href', 'javascript:void(0)').
+              append(
+                jqElement('i').addClass('icon-location-arrow'),
+                $pos,
+                jqElement('span').
+                  addClass('close').
+                  attr('close', 2).
+                  html('&times;').
+                  on('click', function () {
+                    marker.setMap(null);
+                  })
+              )
+          )
+      );
+    });
   }
 
   function initLayout () {
