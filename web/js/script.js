@@ -4,7 +4,7 @@
 
 // storing markers etc.
 var MAP;
-var MC;
+var OMS;
 var GeoMarker;
 var drawingManager;
 
@@ -25,11 +25,17 @@ var circles = [];
     mapTypeId: google.maps.MapTypeId.ROADMAP
   };
 
+  var oms_options = {
+    nearbyDistance: 200,
+    circleSpiralSwitchover: 9,
+  };
+
   // initializes map and directionsDisplay
   function initialize_map () {
     directionsDisplay = new google.maps.DirectionsRenderer();
     MAP = new google.maps.Map(document.getElementById("map"), mapOptions);
     directionsDisplay.setMap(MAP);
+    OMS = new OverlappingMarkerSpiderfier(MAP, oms_options);
     set_location();
   }
 
@@ -112,43 +118,80 @@ var circles = [];
     );
   }
 
+  var makeCircleImage = (function () {
+    var opt = {
+      padding: 3,
+      style: {
+        strokeStyle: '#666',
+        fillStyle: '#fff',
+        lineWidth: 1,
+        shadowColor: '#000',
+        shadowBlur: 10,
+        shadowOffsetX: 5,
+        shadowOffsetY: 5,
+      }
+    };
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+
+    return function (img, type) {
+      type = type || 'image/png';
+      var add = opt.padding + opt.style.lineWidth;
+      canvas.width = img.width;
+      canvas.height = img.height;
+      var d = {
+        x: img.width / 2,
+        y: img.height / 2,
+        r: Math.min(img.width, img.height) / 2,
+        w: img.width,
+        h: img.height,
+      };
+      context.save();
+      for (var key in opt.style) {
+        context[key] = opt.style[key];
+      }
+      context.beginPath();
+      context.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      context.clip();
+      context.fill();
+      context.stroke();
+      context.drawImage(img, 0, 0);
+      context.restore();
+      return canvas.toDataURL(type);
+    };
+  })();
+
+
   function handleShowFriends (response) {
-    var OMS = new OverlappingMarkerSpiderfier(MAP);
-    for (var i=0; i<response.length; ++i) {
-      var city = API.friends._cities[response[i].location.id];
-      var myLatlng = new google.maps.LatLng(city.latitude, city.longitude);
-      console.log(myLatlng);
-      marker = new google.maps.Marker({
-        position: fuzzyPos(myLatlng),
-        map: MAP
-      });
-      marker.user_data = response[i];
-      OMS.addMarker(marker);
-      make_infobox(response[i].pic_square).open(MAP, marker);
-    }
+    response.forEach(function (resp) {
+      var img = new Image();
+      img.onload = function () {
+        var city = API.friends._cities[resp.location.id];
+        var myLatlng = new google.maps.LatLng(city.latitude, city.longitude);
+        marker = new google.maps.Marker({
+          map: MAP,
+          position: fuzzyPos(myLatlng),
+          icon: makeCircleImage(img),
+          shadow: '',
+        });
+        marker.user_data = resp;
+        OMS.addMarker(marker);
+        API.friends.withinRadius(myLatlng.ob, myLatlng.pb, null, function () {
+          console.log(arguments);
+        });
+      };
+      img.src = resp.pictureCached;
+      // make_infobox(resp.pictureCached).open(MAP, marker);
+    });
+
     OMS.addListener('click', function (marker, event) {
       infowindow.setContent(marker.desc);
       infowindow.open(MAP, marker);
     });
+
     OMS.addListener('spiderfy', function(markers) {
       infowindow.close();
     });
-    // MC = new MarkerClusterer(MAP, friend_markers);
-    // MC.setZoomOnClick(false);
-    // google.maps.event.addListener(MC, 'click', function(event) {
-    //   var markers = event.getMarkers();
-    //   var html = '';
-    //   for (var i=0; i<markers.length; ++i) {
-    //     html += friend_list_small_item(markers[i].user_data);
-    //   }
-    //   html = '<ul class="friend-list-small">' + html + '</ul>';
-
-    //   infowindow.setContent(html);
-    //   infowindow.setPosition(
-    //     new google.maps.LatLng(event.getCenter().ob, event.getCenter().pb)
-    //   );
-    //   infowindow.open(MAP);
-    // });
   }
 
   function friend_list_detailed_item (data) {

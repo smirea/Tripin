@@ -64,37 +64,30 @@ var ModuleFBScrape = function (graph, db) {
       }
 
       var dbPerson = {
-        id:           response[i].uid,
-        name:         response[i].name,
-        pictureURL:   response[i].pic_square,
-        locationID:   locationID,
-        profileURL:   response[i].profile_url,
-        username:     response[i].username,
+        id:             response[i].uid,
+        name:           response[i].name,
+        pictureURL:     response[i].pic_square,
+        pictureCached:  DIR_CACHE + '/' + response[i].uid + '.jpg',
+        locationID:     locationID,
+        profileURL:     response[i].profile_url,
+        username:       response[i].username,
       };
       dbPersons.push(dbPerson);
 
-      // Cache picture url locally.
-      if (response[i].pic_square) {
+      // Cache picture url locally if they aren't cached yet.
+      if (response[i].pic_square && fs.existsSync(response[i].pictureCached)) {
         var url = response[i].pic_square.match(/^([a-z]+):\/\/([^\/]+)(\/.*)?$/);
         http.get({
           host: url[2],
           port: 80,
           path: url[3]
         }, function (person, result) {
-          var path = DIR_CACHE + '/' + person.uid + '.jpg';
-          console.log('Caching: `' + path + '`');
-          var file = fs.createWriteStream(path);
+          console.log('Caching: `' + person.pictureCached + '`');
+          var file = fs.createWriteStream(person.pictureCached);
           result.pipe(file);
-          // fs.writeFile(path, result, function (error) {
-          //   if (error) {
-          //     console.warn(' [ERROR] Unable to write `' + path + '`, error: '+ err);
-          //   } else {
-          //     console.log('Cached: `' + path + '`');
-          //   }
-          // });
-        }.bind(this, response[i])).on('error', function(e) {
-          console.warn('Could not load profile pic for `'+response[i].uid+'`, error:' + e.message);
-        });
+        }.bind(this, dbPerson)).on('error', function(person, e) {
+          console.warn('Could not load profile pic for `'+person.id+'`, error:' + e.message);
+        }.bind(this, dbPerson));
       }
     }
 
@@ -198,12 +191,13 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
   if (err) throw err;
 
   var Person = db.define("person", {
-    name:         String,
-    pictureURL:   String,
-    locationID:   { type: 'number', rational: false },
-    profileURL:   String,
-    username:     String,
-    accessToken:  String
+    name:           String,
+    pictureURL:     String,
+    locationID:     { type: 'number', rational: false },
+    profileURL:     String,
+    pictureCached:  String,
+    username:       String,
+    accessToken:    String
   }, {
     id:           'id',
     methods: {

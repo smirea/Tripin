@@ -122,7 +122,15 @@ var API = {
       },
     withinRadius: function _friends_withinRadius (latitude, longitude, threshold, callback) {
       threshold = threshold || 10000;
-      var query = 'SELECT name, description, page_id ' +
+      // var query = 'SELECT name, description, page_id ' +
+      //               'FROM place ' +
+      //               'WHERE distance(latitude, longitude, ' +
+      //                               "'"+latitude+"', '"+longitude+"')" +
+      //                       ' < ' + threshold;
+
+      // For some reason aliasing the distance function does not work :|.
+      var query = 'SELECT name, description, page_id, distance(latitude, longitude, ' +
+                                    "'"+latitude+"', '"+longitude+"') " +
                     'FROM place ' +
                     'WHERE distance(latitude, longitude, ' +
                                     "'"+latitude+"', '"+longitude+"')" +
