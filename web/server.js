@@ -146,16 +146,17 @@ var ModuleFBScrape = function (graph, db) {
       for (var i = 0; i < friends.length; i++) {
         friendIDs.push(friends[i].id2);
       }
+
       db.models.person.find({ id: friendIDs }, function (err, friends) {
-        data.friends = friends;
+        data.friends = friends || [];
 
         var locationIDs = [];
-        for (var i = 0; i < friends.length; i++) {
-          locationIDs.push(friends[i].locationID);
+        for (var i = 0; i < data.friends.length; i++) {
+          locationIDs.push(data.friends[i].locationID);
         }
 
         db.models.location.find({ id: locationIDs }, function (err, locations) {
-          data.locations = locations;
+          data.locations = locations || [];
 
           callback(data);
         });

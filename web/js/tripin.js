@@ -42,7 +42,7 @@ socket.on('userData', function(data) {
   API.me._update(data.me);
 
   $(".user_name").html(data.me.name);
-  $(".user_img").html("<img class=\"img-polaroid\" src=\""+ data.me.picture_url + "\" alt=\"Profile Picture\">");
+  $(".user_img").html("<img class=\"img-polaroid\" src=\""+ data.me.pictureURL + "\" alt=\"Profile Picture\">");
   $(".login").hide();
 
   if (!API.friends._cities) {
