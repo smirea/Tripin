@@ -104,13 +104,22 @@ var circles = [];
     maxWidth: 260
   });
 
+  function fuzzyPos (pos, fuzz) {
+    fuzz = fuzz || 1e-2;
+    return new google.maps.LatLng(
+      pos.ob + (Math.random() > 0.5 ? 1 : -1) * Math.random() * fuzz,
+      pos.pb + (Math.random() > 0.5 ? 1 : -1) * Math.random() * fuzz
+    );
+  }
+
   function handleShowFriends (response) {
     var OMS = new OverlappingMarkerSpiderfier(MAP);
     for (var i=0; i<response.length; ++i) {
       var city = API.friends._cities[response[i].location.id];
       var myLatlng = new google.maps.LatLng(city.latitude, city.longitude);
+      console.log(myLatlng);
       marker = new google.maps.Marker({
-        position: myLatlng,
+        position: fuzzyPos(myLatlng),
         map: MAP
       });
       marker.user_data = response[i];
