@@ -1,7 +1,7 @@
 #!/bin/bash
 
 prerequisites="node npm"
-node_modules="connect express socket.io"
+node_modules="connect express socket.io orm sqlite3 fbgraph"
 
 fail () {
   str=${1:-"Something went wrong"};
