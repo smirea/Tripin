@@ -1,29 +1,6 @@
 window.socket = io.connect('127.0.0.1');
 
-window.fbAsyncInit = function() {
-  FB.init({
-    appId      : '135724333240350', // App ID
-    channelUrl : '/channel.html', // Channel File
-    status     : true, // check login status
-    cookie     : true, // enable cookies to allow the server to access the session
-    xfbml      : true // parse XFBML
-  });
-
-  FB.Event.subscribe('auth.authResponseChange', function(response){
-    handle_login(response);
-  });
-
-  FB.Canvas.setAutoGrow();
-};
-
-// Load the SDK Asynchronously
-(function(d, s, id) {
-  var js, fjs = d.getElementsByTagName(s)[0];
-  if (d.getElementById(id)) return;
-  js = d.createElement(s); js.id = id;
-  js.src = "//connect.facebook.net/en_US/all.js";
-  fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));
+var config;
 
 $(function () {
   $('a[href="#"]').attr('href', 'javascript:void(0)');
@@ -37,6 +14,11 @@ function handle_login(response) {
     socket.emit('newLogin', accessToken);
   }
 }
+
+socket.on('init', function (data) {
+  config = data.config;
+  fb_login();
+});
 
 socket.on('userData', function(data) {
   API.me._update(data.me);
@@ -65,3 +47,30 @@ socket.on('userData', function(data) {
   }
   API.friends._update(data.friends);
 });
+
+function fb_login () {
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : config.app.id,
+      channelUrl : '/channel.html', // Channel File
+      status     : true, // check login status
+      cookie     : true, // enable cookies to allow the server to access the session
+      xfbml      : true // parse XFBML
+    });
+
+    FB.Event.subscribe('auth.authResponseChange', function(response){
+      handle_login(response);
+    });
+
+    FB.Canvas.setAutoGrow();
+  };
+
+  // Load the SDK Asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/all.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+}

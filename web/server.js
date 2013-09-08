@@ -2,11 +2,13 @@
 var PORT = 5000;
 var DIR_CACHE = 'cache';
 
+var config = require('./config.json');
+var clientConfig = getClientConfig(cloneObject(config));
+
 var connect = require('connect');
 var http = require('http');
 var orm = require('orm');
 var fs = require('fs');
-
 
 var ModuleFBScrape = function (graph, db) {
   var FBScrape = {};
@@ -288,9 +290,12 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
   var app = connect.createServer(
     function (req, res, next) {
       var url = require('url');
+      if (config.forbidden_paths.indexOf(url.parse(req.originalUrl).pathname) > -1) {
+        res.writeHead(404);
+        return;
+      }
       if (url.parse(req.originalUrl).pathname !== '/index.html') return next();
 
-      res.end('muie');
       var graph = require('fbgraph');
       var fs = require('fs');
 
@@ -309,7 +314,8 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
   io.sockets.on('connection', function(socket) {
     var FBScrape = ModuleFBScrape(graph, db, socket);
 
-    socket.on('init', function (info) {
+    socket.emit('init', {
+      config: clientConfig
     });
 
     socket.on('disconnect', function () {
@@ -318,8 +324,8 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
     socket.on('extendToken', function (accessToken) {
       graph.setAccessToken(accessToken);
       graph.extendAccessToken({
-          "client_id":      "135724333240350",
-          "client_secret":  "558293e030e417253b638f100568e982"
+          "client_id":      config.app.id,
+          "client_secret":  config.app.secret,
       }, function (err, facebookRes) {
         // TODO: log error and inspect facebookRes
       });
@@ -349,3 +355,38 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
   });
 
 });
+
+function getClientConfig (data) {
+  if (!data.client_excludes) {
+    return data;
+  }
+  data = cloneObject(data);
+  var getNode = function (trail, data, index) {
+    index = index || 0;
+    if (index >= trail.length) { return data; }
+    return trail[index] in data ? getNode(trail, data[trail[index]], index + 1) : undefined;
+  };
+  for (var i=0; i<data.client_excludes.length; ++i) {
+    var ex = data.client_excludes[i].split('.');
+    var key = ex.pop();
+    var node = getNode(ex, data);
+    if (!node) {
+      console.warn(' [ERROR] Node does not exist: `'+data.client_excludes[i]+'`');
+      continue;
+    }
+    delete node[key];
+  }
+  delete data.client_excludes;
+  return data;
+}
+
+/**
+ * Clones plain objects only.
+ * If you pass in objects with loops, you're gonna have a bad time...
+ *
+ * @param  {Object} obj
+ * @return {Object}
+ */
+function cloneObject (obj) {
+  return JSON.parse(JSON.stringify(obj));
+}

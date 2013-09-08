@@ -3,3 +3,6 @@
 db.sqlite3
 node_modules*
 web/cache/*
+
+# Any and all configs should have a default config.TEMPLATE.json file which should be copied and customized.
+config.json

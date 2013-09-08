@@ -1,0 +1,18 @@
+{
+  "client_excludes": [
+    "app.secret"
+  ],
+
+  "app": {
+    "id": "135724333240350",
+    "secret": "558293e030e417253b638f100568e982"
+  },
+
+  "forbidden_paths": [
+    "/config.json",
+    "config.TEMPLATE.json",
+    "/server.js",
+    "/db.sqlite3"
+  ]
+
+}
