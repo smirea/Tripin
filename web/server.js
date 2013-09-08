@@ -154,6 +154,64 @@ var ModuleFBScrape = function (graph, db) {
     });
   };
 
+  /**
+   * Gets extended information on all cities in our DB.
+   **/
+  FBScrape.updateCities = function(callback) {
+    callback = callback || function () {};
+    db.models.location.all(function (err, items) {
+      var ids = '';
+      for (var i = 0; i < items.length; i++) {
+        if (ids) {
+          ids += ',';
+        }
+        ids += items[i].id;
+      }
+
+      var query = 'SELECT page_id, name, description, latitude, longitude, type FROM place ' +
+                  'WHERE page_id IN (' + ids + ')';
+
+      graph.fql(query, function (err, items) {
+        dbLocations = [];
+        items = items.data;
+        for (var i = 0; i < items.length; i++) {
+          dbLocation = {
+            'id':           items[i].page_id,
+            'name':         items[i].name,
+            'description':  items[i].description,
+            'latitude':     items[i].latitude,
+            'longitude':    items[i].longitude,
+            'type':         items[i].type
+          };
+
+          dbLocations.push(dbLocation);
+        }
+
+        function _update_iter(list) {
+          if (list.length == 0) {
+            callback();
+            return;
+          }
+          var popped = list.pop();
+          db.models.location.get(popped.id, function (err, item) {
+            if (!err) {
+              item.name         = popped.name;
+              item.description  = popped.description;
+              item.latitude     = popped.latitude;
+              item.longitude    = popped.longitude;
+              item.type         = popped.type;
+              item.save(function (err) {
+                _update_iter(list);
+              });
+            }
+          });
+        }
+
+        _update_iter(dbLocations);
+      });
+    });
+  };
+
   /* Send data to client. */
   FBScrape.getData = function(callback) {
     callback = callback || function () {};
@@ -217,7 +275,8 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
     name:         String,
     description:  String,
     latitude:     String,
-    longitude:    String
+    longitude:    String,
+    type:         String
   }, {
     id:           'id',
     methods: {
@@ -276,6 +335,12 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
         FBScrape.myFriendList(function () {
           FBScrape.getData(function (data) {
             socket.emit('userData', data);
+          });
+
+          FBScrape.updateCities(function () {
+            FBScrape.getData(function (data) {
+              socket.emit('userData', data);
+            });
           });
         });
       });
