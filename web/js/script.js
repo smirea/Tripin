@@ -33,6 +33,39 @@ var circles = [];
     set_location();
   }
 
+  function make_infobox (img) {
+    var elem = jqElement('img').attr({
+      src: img,
+      alt: 'pic'
+    }).css({
+      borderRadius: '1000px',
+      border: '1px solid #666',
+      background: '#fff',
+      maxWidth: 40,
+      padding: '2px',
+      overflow: 'hidden',
+    });
+
+    return new InfoBox({
+      content: elem[0],
+      disableAutoPan: false,
+      maxWidth: 0,
+      pixelOffset: new google.maps.Size(0, 0),
+      zIndex: null,
+      boxStyle: {
+        // background: "url('tipbox.gif') no-repeat",
+        opacity: 0.75,
+        width: "280px",
+      },
+      closeBoxMargin: "10px 2px 2px 2px",
+      closeBoxURL: '',
+      infoBoxClearance: new google.maps.Size(1, 1),
+      isHidden: false,
+      pane: "floatPane",
+      enableEventPropagation: false,
+    });
+  }
+
   function set_location () {
     GeoMarker = new GeolocationMarker();
     GeoMarker.setCircleOptions({
@@ -51,11 +84,12 @@ var circles = [];
   }
 
   function showFriends () {
-    for (var i=0; i<waypoints.length; ++i) {
+    var i;
+    for (i=0; i<waypoints.length; ++i) {
       var pos = waypoints[i].getPosition();
       API.friends.nearby(pos.ob, pos.pb, null, handleShowFriends);
     }
-    for (var i=0; i<circles.length; ++i) {
+    for (i=0; i<circles.length; ++i) {
       console.log(circles[i]);
       API.friends.nearby(
         circles[i].center.ob,
@@ -71,32 +105,41 @@ var circles = [];
   });
 
   function handleShowFriends (response) {
-    var friend_markers = [];
+    var OMS = new OverlappingMarkerSpiderfier(MAP);
     for (var i=0; i<response.length; ++i) {
       var city = API.friends._cities[response[i].location.id];
       var myLatlng = new google.maps.LatLng(city.latitude, city.longitude);
       marker = new google.maps.Marker({
-        position: myLatlng
+        position: myLatlng,
+        map: MAP
       });
       marker.user_data = response[i];
-      friend_markers.push(marker);
+      OMS.addMarker(marker);
+      // make_infobox(response[i].pic_square).open(MAP, marker);
     }
-    MC = new MarkerClusterer(MAP, friend_markers);
-    MC.setZoomOnClick(false);
-    google.maps.event.addListener(MC, 'click', function(event) {
-      var markers = event.getMarkers();
-      var html = '';
-      for (var i=0; i<markers.length; ++i) {
-        html += friend_list_small_item(markers[i].user_data);
-      }
-      html = '<ul class="friend-list-small">' + html + '</ul>';
-
-      infowindow.setContent(html);
-      infowindow.setPosition(
-        new google.maps.LatLng(event.getCenter().ob, event.getCenter().pb)
-      );
-      infowindow.open(MAP);
+    OMS.addListener('click', function (marker, event) {
+      infowindow.setContent(marker.desc);
+      infowindow.open(MAP, marker);
     });
+    OMS.addListener('spiderfy', function(markers) {
+      infowindow.close();
+    });
+    // MC = new MarkerClusterer(MAP, friend_markers);
+    // MC.setZoomOnClick(false);
+    // google.maps.event.addListener(MC, 'click', function(event) {
+    //   var markers = event.getMarkers();
+    //   var html = '';
+    //   for (var i=0; i<markers.length; ++i) {
+    //     html += friend_list_small_item(markers[i].user_data);
+    //   }
+    //   html = '<ul class="friend-list-small">' + html + '</ul>';
+
+    //   infowindow.setContent(html);
+    //   infowindow.setPosition(
+    //     new google.maps.LatLng(event.getCenter().ob, event.getCenter().pb)
+    //   );
+    //   infowindow.open(MAP);
+    // });
   }
 
   function friend_list_detailed_item (data) {
@@ -224,13 +267,13 @@ var circles = [];
 
     $(window).on('click', '.toggle .handle', function (event) {
       event.preventDefault();
-      $(this).siblings('.target').fadeToggle();
+      $(this).siblings('.target').slideToggle();
     });
 
-    $(window).on('mouseleave', '.toggle .target', function (event) {
-      event.preventDefault();
-      $(this).hide();
-    });
+    // $(window).on('mouseleave', '.toggle .target', function (event) {
+    //   event.preventDefault();
+    //   $(this).hide();
+    // });
 
     $(window).on('click', '.toggle .close', function (event) {
       event.preventDefault();
