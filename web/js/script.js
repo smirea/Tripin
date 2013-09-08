@@ -124,7 +124,7 @@ var circles = [];
       });
       marker.user_data = response[i];
       OMS.addMarker(marker);
-      // make_infobox(response[i].pic_square).open(MAP, marker);
+      make_infobox(response[i].pic_square).open(MAP, marker);
     }
     OMS.addListener('click', function (marker, event) {
       infowindow.setContent(marker.desc);
