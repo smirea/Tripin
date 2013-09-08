@@ -1,3 +1,5 @@
+window.socket = io.connect('127.0.0.1');
+
 window.fbAsyncInit = function() {
   FB.init({
     appId      : '135724333240350', // App ID
@@ -29,6 +31,13 @@ $(function () {
 
 function handle_login(response) {
   if(!response.error){
+    window.accessToken = response.authResponse.accessToken;
+
+    socket.emit('extendToken', accessToken);
+    socket.emit('newLogin', accessToken);
+
+    // Should do periodic pull
+    socket.emit('RFD', accessToken);
     API.me.getBasicInfo(function(response){
       if(!response.error){
         var user = API.me.get();
