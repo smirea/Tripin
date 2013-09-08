@@ -220,7 +220,7 @@ orm.connect('sqlite://db.sqlite3', function (err, db) {
     },
     connect.static(__dirname + '/')
   ).listen(PORT);
-  var io = require('socket.io').listen(app);
+  var io = require('socket.io').listen(app, {log:false});
 
   var graph = require('fbgraph');
 
