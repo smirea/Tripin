@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 39
-/svn/!svn/ver/377/trunk/canvaslayer/src
+/svn/!svn/ver/435/trunk/canvaslayer/src
 END
 CanvasLayerOptions.js
 K 25
@@ -13,5 +13,5 @@ CanvasLayer.js
 K 25
 svn:wc:ra_dav:version-url
 V 54
-/svn/!svn/ver/377/trunk/canvaslayer/src/CanvasLayer.js
+/svn/!svn/ver/435/trunk/canvaslayer/src/CanvasLayer.js
 END

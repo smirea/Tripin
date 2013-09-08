@@ -1,14 +1,14 @@
 10
 
 dir
-390
+443
 http://google-maps-utility-library-v3.googlecode.com/svn/trunk/infobox/src
 http://google-maps-utility-library-v3.googlecode.com/svn
 
 
 
-2012-01-10T02:19:05.752780Z
-358
+2012-12-11T23:51:36.988396Z
+413
 garylittleRLP
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2012-10-06T15:17:34.000000Z
-55a3e36201592cfff91b7c5273d66e8f
-2012-01-10T02:19:05.752780Z
-358
+2013-09-08T07:09:59.000000Z
+72b9d6e0d7f598d95adefc19ba3d8e70
+2012-12-11T23:51:36.988396Z
+413
 garylittleRLP
 has-props
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-21916
+22948
 
 infobox_packed.js
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2012-10-06T15:17:34.000000Z
-2c465b678f9b856c04e8e1e878437258
-2012-01-10T02:19:05.752780Z
-358
+2013-09-08T07:09:59.000000Z
+1f1fb41df563d070c400cd24000ab4fe
+2012-12-11T23:51:36.988396Z
+413
 garylittleRLP
 has-props
 
@@ -92,5 +92,5 @@ has-props
 
 
 
-5624
+5836
 

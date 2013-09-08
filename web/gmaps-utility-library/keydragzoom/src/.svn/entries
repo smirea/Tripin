@@ -1,14 +1,14 @@
 10
 
 dir
-390
+443
 http://google-maps-utility-library-v3.googlecode.com/svn/trunk/keydragzoom/src
 http://google-maps-utility-library-v3.googlecode.com/svn
 
 
 
-2012-02-24T21:45:07.192152Z
-364
+2012-12-27T02:11:07.043229Z
+415
 garylittleRLP
 
 
@@ -32,10 +32,10 @@ file
 
 
 
-2012-10-06T15:17:32.000000Z
-1a08b0edd32bd38ce013cd555255b10c
-2012-02-24T21:45:07.192152Z
-364
+2013-09-08T07:09:56.000000Z
+ffbd78338c4f8e0f70c6a62c70489625
+2012-12-27T02:11:07.043229Z
+415
 garylittleRLP
 has-props
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-37079
+37724
 
 keydragzoom_packed.js
 file
@@ -66,10 +66,10 @@ file
 
 
 
-2012-10-06T15:17:32.000000Z
-cc637ed0284713710f9a9cdc1024782d
-2012-02-24T21:45:07.192152Z
-364
+2013-09-08T07:09:56.000000Z
+6e65118ab5b7ffedacea5e48384d57b0
+2012-12-27T02:11:07.043229Z
+415
 garylittleRLP
 has-props
 
@@ -92,5 +92,5 @@ has-props
 
 
 
-8762
+8967
 

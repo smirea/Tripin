@@ -1,13 +1,13 @@
 K 25
 svn:wc:ra_dav:version-url
 V 48
-/svn/!svn/ver/274/trunk/markerwithlabel/examples
+/svn/!svn/ver/431/trunk/markerwithlabel/examples
 END
 basic.html
 K 25
 svn:wc:ra_dav:version-url
 V 59
-/svn/!svn/ver/274/trunk/markerwithlabel/examples/basic.html
+/svn/!svn/ver/431/trunk/markerwithlabel/examples/basic.html
 END
 home.jpg
 K 25
@@ -19,13 +19,13 @@ events.html
 K 25
 svn:wc:ra_dav:version-url
 V 60
-/svn/!svn/ver/274/trunk/markerwithlabel/examples/events.html
+/svn/!svn/ver/391/trunk/markerwithlabel/examples/events.html
 END
 lettered.html
 K 25
 svn:wc:ra_dav:version-url
 V 62
-/svn/!svn/ver/274/trunk/markerwithlabel/examples/lettered.html
+/svn/!svn/ver/391/trunk/markerwithlabel/examples/lettered.html
 END
 markerwithlabel-screen.png
 K 25
@@ -37,5 +37,5 @@ picturelabel.html
 K 25
 svn:wc:ra_dav:version-url
 V 66
-/svn/!svn/ver/274/trunk/markerwithlabel/examples/picturelabel.html
+/svn/!svn/ver/391/trunk/markerwithlabel/examples/picturelabel.html
 END

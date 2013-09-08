@@ -1,13 +1,13 @@
 K 25
 svn:wc:ra_dav:version-url
 V 45
-/svn/!svn/ver/390/trunk/geolocationmarker/src
+/svn/!svn/ver/434/trunk/geolocationmarker/src
 END
 geolocationmarker.js
 K 25
 svn:wc:ra_dav:version-url
 V 66
-/svn/!svn/ver/390/trunk/geolocationmarker/src/geolocationmarker.js
+/svn/!svn/ver/434/trunk/geolocationmarker/src/geolocationmarker.js
 END
 geolocationmarker-exports.js
 K 25
@@ -19,5 +19,5 @@ geolocationmarker-compiled.js
 K 25
 svn:wc:ra_dav:version-url
 V 75
-/svn/!svn/ver/390/trunk/geolocationmarker/src/geolocationmarker-compiled.js
+/svn/!svn/ver/434/trunk/geolocationmarker/src/geolocationmarker-compiled.js
 END

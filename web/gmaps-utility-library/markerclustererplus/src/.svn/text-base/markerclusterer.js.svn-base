@@ -3,7 +3,7 @@
 
 /**
  * @name MarkerClustererPlus for Google Maps V3
- * @version 2.0.14 [May 16, 2012]
+ * @version 2.0.15 [October 18, 2012]
  * @author Gary Little
  * @fileoverview
  * The library creates and manages per-zoom-level clusters for large amounts of markers.
@@ -132,7 +132,7 @@ ClusterIcon.prototype.onAdd = function () {
   this.getPanes().overlayMouseTarget.appendChild(this.div_);
 
   // Fix for Issue 157
-  google.maps.event.addListener(this.getMap(), "bounds_changed", function () {
+  this.boundsChangedListener_ = google.maps.event.addListener(this.getMap(), "bounds_changed", function () {
     cDraggingMapByCluster = cMouseDownInCluster;
   });
 
@@ -211,6 +211,7 @@ ClusterIcon.prototype.onAdd = function () {
 ClusterIcon.prototype.onRemove = function () {
   if (this.div_ && this.div_.parentNode) {
     this.hide();
+    google.maps.event.removeListener(this.boundsChangedListener_);
     google.maps.event.clearInstanceListeners(this.div_);
     this.div_.parentNode.removeChild(this.div_);
     this.div_ = null;
@@ -774,7 +775,9 @@ MarkerClusterer.prototype.onRemove = function () {
 
   // Put all the managed markers back on the map:
   for (i = 0; i < this.markers_.length; i++) {
-    this.markers_[i].setMap(this.activeMap_);
+    if (this.markers_[i].getMap() !== this.activeMap_) {
+      this.markers_[i].setMap(this.activeMap_);
+    }
   }
 
   // Remove all clusters:

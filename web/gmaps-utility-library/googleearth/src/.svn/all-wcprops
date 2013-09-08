@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 39
-/svn/!svn/ver/328/trunk/googleearth/src
+/svn/!svn/ver/435/trunk/googleearth/src
 END
 googleearth-compiled.js
 K 25
@@ -13,5 +13,5 @@ googleearth.js
 K 25
 svn:wc:ra_dav:version-url
 V 54
-/svn/!svn/ver/328/trunk/googleearth/src/googleearth.js
+/svn/!svn/ver/435/trunk/googleearth/src/googleearth.js
 END

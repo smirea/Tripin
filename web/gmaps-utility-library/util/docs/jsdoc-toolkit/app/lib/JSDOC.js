@@ -1,6 +1,6 @@
 /**
 	@overview
-	@date $Date: 2008-06-08 23:57:25 +0200 (Sun, 08 Jun 2008) $
+	@date $Date: 2008-06-08 14:57:25 -0700 (Sun, 08 Jun 2008) $
 	@version $Revision: 638 $ 
 	@location $HeadURL: http://jsdoc-toolkit.googlecode.com/svn/trunk/jsdoc-toolkit/app/lib/JSDOC.js $
  */
