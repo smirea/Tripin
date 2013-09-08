@@ -27,6 +27,13 @@ body {
   right: 10px;
 }
 
+.user_name {
+  display: inline-block;
+  position: relative;
+  left: -10px;
+  background: #fff;
+}
+
 .chromeframe { margin: 0.2em 0; background: #ccc; color: black; padding: 0.2em 0; }
 
 @logo-size: 110px;
@@ -60,6 +67,7 @@ body {
   z-index: 20000;
   top: 0;
   left: 10px;
+  box-shadow: 5px 2px 10px #fff;
   border-bottom-right-radius: 10px;
   border-bottom-left-radius: 10px;
   background: rgba(60, 60, 60, 0.85);
@@ -111,6 +119,7 @@ body {
   position: absolute;
   top: 100%;
   left: 0;
+  box-shadow: 5px 2px 10px #fff;
   border-bottom-right-radius: 10px;
   border-bottom-left-radius: 10px;
   background: rgba(60, 60, 60, 0.75);
@@ -144,6 +153,11 @@ body {
   color: inherit;
   opacity: 1;
   line-height: 40px;
+}
+
+.marker .location-coordinates {
+  display: inline-block;
+  margin-left: 5px;
 }
 
 .circle {
