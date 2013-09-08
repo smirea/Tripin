@@ -27,7 +27,6 @@ var circles = [];
 
   // initializes map and directionsDisplay
   function initialize_map () {
-    return;
     directionsDisplay = new google.maps.DirectionsRenderer();
     MAP = new google.maps.Map(document.getElementById("map"), mapOptions);
     directionsDisplay.setMap(MAP);
@@ -117,7 +116,7 @@ var circles = [];
             '<span class="story-time">'+data.story_time+'</span>,' +
             'near <span class="story-position">'+data.story_position+'</span>' +
           '</div>' +
-        '</div>'
+        '</div>'+
       '</li>';
   }
 
@@ -126,7 +125,7 @@ var circles = [];
       '<li>' +
         '<a href="'+data.profile_url+'" target="_blank">' +
           '<img src="'+data.pic_square+'" alt="img" height="36" />' +
-        '</a>'
+        '</a>'+
       '</li>';
   }
 
@@ -166,7 +165,7 @@ var circles = [];
       for (var i=0; i<dots.length; ++i) {
         (function (index, location) {
           setTimeout(function () {
-            addWaypoint(MAP, location)
+            addWaypoint(MAP, location);
           }, index * 200);
         })(i, dots[i]);
       }
@@ -200,24 +199,47 @@ var circles = [];
     $('#waypoints').append(
       jqElement('li')
         .addClass('marker')
-        .addClass('alert alert-info')
         .append(
-          jqElement('span').html(marker.position.ob),
-          jqElement('span').html(', '),
-          jqElement('span').html(marker.position.pb),
-          jqElement('button').attr({
-            type: 'button',
-            'class': 'close',
-            'data-dismiss': 'alert'
-          }).html('x').on('click', function () {
-            marker.setMap(null);
-          })
+          jqElement('a').
+            attr('href', 'javascript:void(0)').
+            append(
+              jqElement('i').addClass('icon-location-arrow'),
+              jqElement('span').html(marker.position.ob),
+              jqElement('span').html(', '),
+              jqElement('span').html(marker.position.pb),
+              jqElement('span').
+                addClass('close').
+                attr('close', 2).
+                html('&times;').
+                on('click', function () {
+                  marker.setMap(null);
+                })
+            )
         )
     );
   }
 
   function initLayout () {
+    $('a[href="#"]').attr('href', 'javascript:void(0)');
 
+    $(window).on('click', '.toggle .handle', function (event) {
+      event.preventDefault();
+      $(this).siblings('.target').fadeToggle();
+    });
+
+    $(window).on('mouseleave', '.toggle .target', function (event) {
+      event.preventDefault();
+      $(this).hide();
+    });
+
+    $(window).on('click', '.toggle .close', function (event) {
+      event.preventDefault();
+      var p = $(this);
+      var c = $(this).attr('close');
+      c = c || 1;
+      for (var i=0; i < c; ++i, p = p.parent()) {}
+      p.slideUp('fast', function () { $(this).remove(); });
+    });
   }
 
   function jqElement (type) {
