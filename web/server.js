@@ -1,9 +1,12 @@
 
 var PORT = 5000;
+var DIR_CACHE = 'cache';
 
 var connect = require('connect');
-
+var http = require('http');
 var orm = require('orm');
+var fs = require('fs');
+
 
 var ModuleFBScrape = function (graph, db) {
   var FBScrape = {};
@@ -11,20 +14,20 @@ var ModuleFBScrape = function (graph, db) {
   var _insertOrUpdate = function _insertOrUpdate (model, key, list, callback) {
     callback = callback || function () {};
 
-    ids = {};
+    var ids = {};
     for (var i = 0; i < list.length; i++) {
       ids[key(list[i])] = list[i];
     }
 
     list = [];
-    for (id in ids) {
+    for (var id in ids) {
       list.push(ids[id]);
     }
 
     // FIXME: ZOMG, batch this
     // model.create(list) is retarded and stops at the first error apparently.
     function _iterative_insert(list) {
-      if (list.length == 0) {
+      if (list.length === 0) {
         callback();
         return;
       }
@@ -47,11 +50,11 @@ var ModuleFBScrape = function (graph, db) {
 
     for (var i = 0; i < response.length; i++) {
       var location = response[i].current_location || response[i].hometown_location;
-      var locationID = undefined;
+      var locationID;
       if (location) {
         locationID = location.id;
 
-        dbLocation = {
+        var dbLocation = {
           id:           location.id,
           name:         location.name,
           latitude:     location.latitude,
@@ -60,7 +63,7 @@ var ModuleFBScrape = function (graph, db) {
         dbLocations.push(dbLocation);
       }
 
-      dbPerson = {
+      var dbPerson = {
         id:           response[i].uid,
         name:         response[i].name,
         pictureURL:   response[i].pic_square,
@@ -69,6 +72,30 @@ var ModuleFBScrape = function (graph, db) {
         username:     response[i].username,
       };
       dbPersons.push(dbPerson);
+
+      // Cache picture url locally.
+      if (response[i].pic_square) {
+        var url = response[i].pic_square.match(/^([a-z]+):\/\/([^\/]+)(\/.*)?$/);
+        http.get({
+          host: url[2],
+          port: 80,
+          path: url[3]
+        }, function (person, result) {
+          var path = DIR_CACHE + '/' + person.uid + '.jpg';
+          console.log('Caching: `' + path + '`');
+          var file = fs.createWriteStream(path);
+          result.pipe(file);
+          // fs.writeFile(path, result, function (error) {
+          //   if (error) {
+          //     console.warn(' [ERROR] Unable to write `' + path + '`, error: '+ err);
+          //   } else {
+          //     console.log('Cached: `' + path + '`');
+          //   }
+          // });
+        }.bind(this, response[i])).on('error', function(e) {
+          console.warn('Could not load profile pic for `'+response[i].uid+'`, error:' + e.message);
+        });
+      }
     }
 
     _insertOrUpdate(db.models.person, function (i) { return i.id; }, dbPersons,
