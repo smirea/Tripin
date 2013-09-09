@@ -76,7 +76,7 @@ var ModuleFBScrape = function (graph, db) {
       dbPersons.push(dbPerson);
 
       // Cache picture url locally if they aren't cached yet.
-      if (response[i].pic_square && fs.existsSync(response[i].pictureCached)) {
+      if (response[i].pic_square && !fs.existsSync(response[i].pictureCached)) {
         var url = response[i].pic_square.match(/^([a-z]+):\/\/([^\/]+)(\/.*)?$/);
         http.get({
           host: url[2],
