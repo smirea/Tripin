@@ -83,12 +83,12 @@ var unique_markers = {};
     var i;
     for (i=0; i<waypoints.length; ++i) {
       var pos = waypoints[i].getPosition();
-      API.friends.nearby(pos.ob, pos.pb, null, handleShowFriends);
+      API.friends.nearby(pos.lat(), pos.lng(), null, handleShowFriends);
     }
     for (i=0; i<circles.length; ++i) {
       API.friends.nearby(
-        circles[i].center.ob,
-        circles[i].center.pb,
+        circles[i].center.lat(),
+        circles[i].center.lng(),
         circles[i].radius / 1000,
         handleShowFriends
       );
@@ -102,10 +102,10 @@ var unique_markers = {};
   function fuzzyPos (pos, fuzz) {
     fuzz = fuzz || 6e-2;
     return new google.maps.LatLng(
-      // pos.ob + (Math.random() > 0.5 ? 1 : -1) * Math.random() * fuzz,
-      // pos.pb + (Math.random() > 0.5 ? 1 : -1) * Math.random() * fuzz
-      pos.ob - Math.random() * fuzz,
-      pos.pb - Math.random() * fuzz
+      // pos.lat() + (Math.random() > 0.5 ? 1 : -1) * Math.random() * fuzz,
+      // pos.lng() + (Math.random() > 0.5 ? 1 : -1) * Math.random() * fuzz
+      pos.lat() - Math.random() * fuzz,
+      pos.lng() - Math.random() * fuzz
     );
   }
 
@@ -380,7 +380,7 @@ var unique_markers = {};
    */
   function addWaypointView (marker) {
     var $pos = jqElement('span').addClass('location-coordinates');
-    API.friends.withinRadius(marker.position.ob, marker.position.pb, 50000, function (res) {
+    API.friends.withinRadius(marker.position.lat(), marker.position.lng(), 50000, function (res) {
       try {
         res.sort(function (a, b) {
           return a.distance_meters - b.distance_meters;
@@ -389,9 +389,9 @@ var unique_markers = {};
       } catch (ex) {
         console.warn(ex.message, res);
         $pos.append(
-          jqElement('span').html(marker.position.ob),
+          jqElement('span').html(marker.position.lat()),
           jqElement('span').html(', '),
-          jqElement('span').html(marker.position.pb)
+          jqElement('span').html(marker.position.lng())
         );
       }
       $('#waypoints').append(

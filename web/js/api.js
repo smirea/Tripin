@@ -49,77 +49,82 @@ var API = {
     nearby: function _friends_nearby (latitude, longitude, threshold, callback){
       if (!API.friends._info) {
         console.warn('[API] Friends not initialized!');
-      } else if (!API.friends._cities) {
+        callback(null);
+        return;
+      }
+      if (!API.friends._cities) {
         console.warn('[API] Cities\' locations not fetched');
-      } else {
-        var in_range = [];
-        threshold = threshold || 100;
-        for (var i in API.friends._cities) {
-          var distance = API.location.distance(
-            latitude,
-            longitude,
-            API.friends._cities[i].latitude,
-            API.friends._cities[i].longitude
-          );
-          if (distance < threshold) {
-            for (var j in API.friends._info) {
-              if (API.friends._info[j].location &&
-                  API.friends._info[j].location.id ===
-                    API.friends._cities[i].page_id) {
-                in_range.push(API.friends._info[j]);
-              }
+        callback(null);
+        return;
+      }
+      var in_range = [];
+      threshold = threshold || 100;
+      for (var i in API.friends._cities) {
+        var distance = API.location.distance(
+          latitude,
+          longitude,
+          API.friends._cities[i].latitude,
+          API.friends._cities[i].longitude
+        );
+        if (distance < threshold) {
+          for (var j in API.friends._info) {
+            if (API.friends._info[j].location &&
+                API.friends._info[j].location.id ===
+                  API.friends._cities[i].page_id) {
+              in_range.push(API.friends._info[j]);
             }
           }
         }
-        callback(in_range);
-      }},
-      _fetchInfo: function _fetch_friends_info (userId, callback){
-        return FB.api('/'+userId.toString(),
-          {
-            fields: 'address,name,location,picture,username,id'
-          }, function (response){
-              response.profileURL = 'http://www.facebook.com/';
-              response.profileURL += response.username ?  response.username : response.id;
-              callback(response);
-          });
-      },
-      getInformation: function _get_friends_information (userId, callback){
-         API.friends._fetchInfo(userId, function(){
-          var html = "";
-
-          callback(userHTML)
+      }
+      callback(in_range);
+    },
+    _fetchInfo: function _fetch_friends_info (userId, callback){
+      return FB.api('/'+userId.toString(),
+        {
+          fields: 'address,name,location,picture,username,id'
+        }, function (response){
+            response.profileURL = 'http://www.facebook.com/';
+            response.profileURL += response.username ?  response.username : response.id;
+            callback(response);
         });
-      },
+    },
+    getInformation: function _get_friends_information (userId, callback){
+       API.friends._fetchInfo(userId, function(){
+        var html = "";
 
-      _fetchMultiple: function _fetch_multiple_info (userIDS, callback){
-        API.friends._details = {};
-        API.friends._details.data = [];
-        var batches = [];
-        var maxCount = parseInt(userIDS.length/50, 10);
-        var count = 0;
-        while(count <= maxCount) {
-          for(var i=0; i < userIDS.length && i < 50*(count+1); i++){
-            var userReq = {
-                            "method":"GET",
-                            "relative_url":userIDS[i].toString()+"?fields=address,name,location,picture,username,id"
-                          };
-            batches.push(userReq);
-          }
+        callback(userHTML)
+      });
+    },
 
-          FB.api('/', 'POST', {batch: batches}, function(responses){
-            for(var i=0; i<responses.length; i++){
-              var userInfo = JSON.parse(responses[i].body);
-              userInfo.profileURL = 'http://www.facebook.com/';
-              userInfo.profileURL += userInfo.username ?  userInfo.username : userInfo.id;
-              userInfo.pictureURL = userInfo.picture.data.url;
-              delete userInfo.picture;
-              API.friends._details.data.push(userInfo);
-            }
-            if(count === maxCount)
-              callback(API.friends._details.data);
-          });
+    _fetchMultiple: function _fetch_multiple_info (userIDS, callback){
+      API.friends._details = {};
+      API.friends._details.data = [];
+      var batches = [];
+      var maxCount = parseInt(userIDS.length/50, 10);
+      var count = 0;
+      while(count <= maxCount) {
+        for(var i=0; i < userIDS.length && i < 50*(count+1); i++){
+          var userReq = {
+                          "method":"GET",
+                          "relative_url":userIDS[i].toString()+"?fields=address,name,location,picture,username,id"
+                        };
+          batches.push(userReq);
         }
-      },
+
+        FB.api('/', 'POST', {batch: batches}, function(responses){
+          for(var i=0; i<responses.length; i++){
+            var userInfo = JSON.parse(responses[i].body);
+            userInfo.profileURL = 'http://www.facebook.com/';
+            userInfo.profileURL += userInfo.username ?  userInfo.username : userInfo.id;
+            userInfo.pictureURL = userInfo.picture.data.url;
+            delete userInfo.picture;
+            API.friends._details.data.push(userInfo);
+          }
+          if(count === maxCount)
+            callback(API.friends._details.data);
+        });
+      }
+    },
     withinRadius: function _friends_withinRadius (latitude, longitude, threshold, callback) {
       threshold = threshold || 10000;
       // For some reason aliasing the distance function does not work :|.
