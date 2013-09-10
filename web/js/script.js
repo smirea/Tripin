@@ -228,6 +228,10 @@ var unique_markers = {};
   }
 
   function handleShowFriends (response) {
+    if (!response) {
+      console.log('[handleShowFriends] Invalid response.');
+      return;
+    }
     response.forEach(function (resp) {
       if (unique_markers[resp.id]) {
         return;
@@ -236,7 +240,7 @@ var unique_markers = {};
 
       var img = new Image();
       img.onload = function () {
-        var city = API.friends._cities[resp.location.id];
+        var city = API.friends._places.CITY[resp.location.id];
         var myLatlng = new google.maps.LatLng(city.latitude, city.longitude);
         var pin = makePinImage(img, null, {w:25, h:25});
         marker = new google.maps.Marker({

@@ -44,7 +44,7 @@ var API = {
      * Stores all the cached data about friends
      */
     _info: null,
-    _cities: null,
+    _places: null,
     _details: null,
     nearby: function _friends_nearby (latitude, longitude, threshold, callback){
       if (!API.friends._info) {
@@ -52,29 +52,17 @@ var API = {
         callback(null);
         return;
       }
-      if (!API.friends._cities) {
-        console.warn('[API] Cities\' locations not fetched');
-        callback(null);
-        return;
-      }
       var in_range = [];
       threshold = threshold || 100;
-      for (var i in API.friends._cities) {
+      for (var key in API.friends._info) {
         var distance = API.location.distance(
           latitude,
           longitude,
-          API.friends._cities[i].latitude,
-          API.friends._cities[i].longitude
+          API.friends._info[key].location.latitude,
+          API.friends._info[key].location.longitude
         );
-        if (distance < threshold) {
-          for (var j in API.friends._info) {
-            if (API.friends._info[j].location &&
-                API.friends._info[j].location.id ===
-                  API.friends._cities[i].page_id) {
-              in_range.push(API.friends._info[j]);
-            }
-          }
-        }
+        if (distance > threshold) { continue; }
+        in_range.push(API.friends._info[key]);
       }
       callback(in_range);
     },
@@ -136,27 +124,28 @@ var API = {
                             ' < ' + threshold;
       return API.fql(query, callback);
     },
-    cities: function _friends_cities (callback) {
+    places: function _friends_places (callback) {
       if (!API.friends._info) {
         console.warn('[API] Friends not initialized!');
         return;
       }
-      var cities = [];
+      var places = [];
       for (var key in API.friends._info) {
         if (!API.friends._info[key].location) {
           continue;
         }
-        cities.push("'"+API.friends._info[key].location.id+"'");
+        places.push("'"+API.friends._info[key].location.id+"'");
       }
-      var query = "SELECT name, description, latitude, longitude, page_id " +
-                    "FROM place " +
-                    "WHERE page_id IN ("+cities.join(',')+")";
-      API.friends._cities = API.friends._cities || {};
+      var fields = 'checkin_count, content_age, description, display_subtext, geometry, is_city, '+
+                    'is_unclaimed, latitude, longitude, name, page_id, pic, pic_big, pic_crop, '+
+                    'pic_large, pic_small, pic_square, search_type, type';
+      var query = "SELECT "+fields+" FROM place WHERE page_id IN ("+places.join(',')+")";
+      API.friends._places = API.friends._places || {};
       API.fql(query, function (response) {
+        console.log(response);
         for (var i=0; i<response.length; ++i) {
-          if (!API.friends._cities[response[i].page_id]) {
-            API.friends._cities[response[i].page_id] = response[i];
-          }
+          API.friends._places[response.type] = API.friends._places[response.type] || {};
+          API.friends._places[response.type][response[i].page_id] = response[i];
         }
         callback();
       });

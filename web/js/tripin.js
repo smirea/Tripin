@@ -27,18 +27,18 @@ socket.on('userData', function(data) {
   $(".user_img").html("<img class=\"img-polaroid\" src=\""+ data.me.pictureURL + "\" alt=\"Profile Picture\">");
   $(".login").hide();
 
-  if (!API.friends._cities) {
-    API.friends._cities = {};
-  }
+  API.friends._places = API.friends._places || {all:{}};
   for (var i = 0; i < data.locations.length; i++) {
-    data.locations[i].page_id = data.locations[i].id;
-
-    API.friends._cities[data.locations[i].id] = data.locations[i];
+    var loc = data.locations[i];
+    loc.page_id = loc.id;
+    API.friends._places[loc.type] = API.friends._places[loc.type] || {};
+    API.friends._places[loc.type][loc.id] = loc;
+    API.friends._places.all[loc.id] = loc;
   }
 
   for (var i = 0; i < data.friends.length; i++) {
     if (data.friends[i].locationID) {
-      data.friends[i].location = API.friends._cities[data.friends[i].locationID];
+      data.friends[i].location = API.friends._places.all[data.friends[i].locationID];
     }
 
     data.friends[i].uid = data.friends[i].id;
