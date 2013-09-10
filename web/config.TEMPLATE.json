@@ -1,6 +1,7 @@
 {
   "client_excludes": [
-    "app.secret"
+    "app.secret",
+    "forbidden_paths"
   ],
 
   "port": 5000,
