@@ -49,9 +49,10 @@ var unique_markers = {};
     pixelOffset: new google.maps.Size(25, -40),
     zIndex: 0,
     boxStyle: {
-      // background: "url('tipbox.gif') no-repeat",
-      opacity: 0.75,
+      background: 'transparent',
+      opacity: 0.85,
       minWidth: '150px',
+      maxWidth: '300px'
     },
     closeBoxMargin: '10px 2px 2px 2px',
     closeBoxURL: '',
@@ -108,62 +109,95 @@ var unique_markers = {};
     );
   }
 
-  var makeCircleImage = (function () {
-    var opt = {
-      padding: 3,
-      style: {
-        strokeStyle: '#666',
-        fillStyle: '#fff',
-        lineWidth: 1,
-        // shadowColor: '#000',
-        // shadowBlur: 2,
-        // shadowOffsetX: 2,
-        // shadowOffsetY: 2,
-      }
-    };
+  var makePinImage = (function makePinImage_wrapper () {
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
 
+    var tmp_canvas = document.createElement('canvas');
+    var tmp_context = tmp_canvas.getContext('2d');
 
-    return function (img, type) {
-      var canvas = document.createElement('canvas');
-      var context = canvas.getContext('2d');
-
-      var destCanvas = document.createElement('canvas');
-      var destContext = destCanvas.getContext('2d');
-      destContext.globalCompositeOperation = 'source-atop';
-
+    return function draw_pin (img, type, pin) {
       type = type || 'image/png';
-      var d = {
-        x: img.width / 2,
-        y: img.height / 2,
-        r: Math.min(img.width, img.height) / 2,
-        w: img.width,
-        h: img.height,
+      pin = pin || {w:25, h:25};
+      pin.y = -3;
+      var x = 0;
+      var y = 0;
+      var r = Math.min(img.width, img.height) / 2;
+      var pad = 4;
+      var dim = {
+        x: x + r + pad,
+        y: y + r + pad,
+        r: r + pad,
+        w: pin.w,
+        h: pin.h
       };
-      canvas.width = img.width;
-      canvas.height = img.height;
-      context.drawImage(img, 0, 0);
-      context.globalCompositeOperation = 'destination-in';
+
+      canvas.width = img.width + pad * 2;
+      canvas.height = img.height + pad * 2 + pin.h + pin.y;
+
+      var stats = {
+        url: null,
+        w: canvas.width,
+        h: canvas.height,
+        anchor: {
+          x: dim.x + dim.w / 2,
+          y: dim.y + dim.h
+        },
+        shape: {
+          type: 'poly',
+          coord: [canvas.width * 1/3, 0, canvas.width * 2/3, 0,
+                  canvas.width, dim.r * 2/3, canvas.width, dim.r * 4/3,
+                  canvas.width / 2, canvas.height, 0, dim.r * 4/3,
+                  0, dim.r * 2/3 ]
+        }
+      };
+
+      context.fillStyle = '#000';
+      draw_pin_bottom(context, dim.x, dim.y + dim.r + pin.y, dim.w, dim.h);
       context.beginPath();
-      context.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      context.arc(dim.x, dim.y, dim.r, 0, Math.PI * 2);
+      context.fill();
+      dim.r -= 1;
+      dim.w -= 1;
+      dim.h -= 1;
+      context.fillStyle = '#fff';
+      draw_pin_bottom(context, dim.x, dim.y + dim.r + pin.y, dim.w, dim.h);
+      context.beginPath();
+      context.arc(dim.x, dim.y, dim.r, 0, Math.PI * 2);
       context.fill();
 
-      var add = opt.padding + opt.style.lineWidth;
-      destCanvas.width = img.width + add * 2;
-      destCanvas.height = img.height + add * 2;
-      destContext.save();
-      for (var key in opt.style) {
-        destContext[key] = opt.style[key];
-      }
-      destContext.save();
-      destContext.beginPath();
-      destContext.arc(d.x + add, d.y + add, d.r + add, 0, Math.PI * 2);
-      destContext.fill();
-      destContext.stroke();
-      destContext.drawImage(canvas, add, add);
-      destContext.restore();
+      tmp_canvas.width = img.width;
+      tmp_canvas.height = img.height;
 
-      return destCanvas.toDataURL(type);
-    };
+      tmp_context.arc(r, r, r, 0, Math.PI * 2);
+      tmp_context.drawImage(img, 0, 0);
+      tmp_context.globalCompositeOperation = 'destination-in';
+      tmp_context.fill();
+
+      context.drawImage(tmp_canvas, x + pad, y + pad);
+
+      stats.url = canvas.toDataURL(type);
+      return  stats;
+
+      function draw_pin_bottom (context, x, y, w, h) {
+        x = x - w/2;
+        var shape = [
+          { mid: [x + w / 2, y + h / 2],
+            end: [x + w / 2, y + h], },
+          { mid: [x + w / 2, y + h / 2],
+            end: [x + w, y], },
+        ];
+        shape.start = [x, y];
+
+        context.beginPath();
+        context.moveTo.apply(context, shape.start);
+        for (var i=0; i<shape.length; ++i) {
+          context.quadraticCurveTo(shape[i].mid[0], shape[i].mid[1], shape[i].end[0], shape[i].end[1]);
+        }
+        context.closePath();
+        context.fill();
+      }
+    }
   })();
 
   function make_infobox_content (person) {
@@ -204,10 +238,17 @@ var unique_markers = {};
       img.onload = function () {
         var city = API.friends._cities[resp.location.id];
         var myLatlng = new google.maps.LatLng(city.latitude, city.longitude);
+        var pin = makePinImage(img, null, {w:25, h:25});
         marker = new google.maps.Marker({
           map: MAP,
           position: fuzzyPos(myLatlng),
-          icon: makeCircleImage(img),
+          icon: {
+            url: pin.url,
+            size: new google.maps.Size(pin.w, pin.h),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(pin.anchor.x, pin.anchor.y),
+          },
+          shape: pin.shape,
           shadow: '',
         });
         marker.user_data = resp;
